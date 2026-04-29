@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="ellectro.ma - Your premier e-commerce platform" />
+    <meta name="theme-color" content="#000000" />
+    
+    <title>ellectro.ma | E-Commerce Store</title>
+    
+    <!-- Bootstrap CSS -->
+    <link 
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
+      rel="stylesheet" 
+      integrity="sha384-9ndCyUaIbzAi2FUarbnLLvTndVJK7fzYd57Im6K0VKjkY0908TPqKjxqUZAEpJ1D" 
+      crossorigin="anonymous" 
+    />
+    
+    <!-- Font Awesome Icons -->
+    <link 
+      rel="stylesheet" 
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+      integrity="sha512-iecdLmaskl7CVJkEZSMUkrQ6usznlEWek56in+5qKWlTnqH7fbFvSMs3fyqB2FaO1f+PZlDteyUZCXtqKf7p5dA==" 
+      crossorigin="anonymous" 
+      referrerpolicy="no-referrer" 
+    />
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f8f9fa;
+        color: #333;
+        line-height: 1.6;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      /* Header Styles */
+      .navbar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .navbar-brand {
+        font-weight: 700;
+        font-size: 1.5rem;
+        color: #fff !important;
+        letter-spacing: 1px;
+      }
+
+      .nav-link {
+        color: #fff !important;
+        margin-left: 1.5rem;
+        transition: all 0.3s ease;
+      }
+
+      .nav-link:hover {
+        color: #ffd700 !important;
+        transform: translateY(-2px);
+      }
+
+      /* Main Container */
+      #root {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      main {
+        flex: 1;
+      }
+
+      /* Footer Styles */
+      .footer {
+        background-color: #2d3436;
+        color: #fff;
+        padding: 2rem 0;
+        text-align: center;
+        margin-top: 4rem;
+      }
+
+      .footer p {
+        margin: 0;
+      }
+
+      /* Product Grid */
+      .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 2rem;
+        padding: 2rem 0;
+      }
+
+      .product-card {
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+      }
+
+      .product-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      .product-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        background-color: #f0f0f0;
+      }
+
+      .product-card h3 {
+        padding: 1rem 1rem 0.5rem;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .price {
+        color: #667eea;
+        font-weight: 700;
+        font-size: 1.5rem;
+        padding: 0 1rem;
+      }
+
+      .description {
+        color: #666;
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+      }
+
+      .product-card .btn {
+        margin: 1rem;
+        width: calc(100% - 2rem);
+      }
+
+      /* Buttons */
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-success {
+        background-color: #27ae60;
+      }
+
+      .btn-success:hover {
+        background-color: #229954;
+      }
+
+      /* Forms */
+      .login-form,
+      .product-form {
+        max-width: 500px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-group label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+      }
+
+      .form-group input,
+      .form-group textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+      }
+
+      .form-group input:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+      }
+
+      /* Cart Table */
+      .cart-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .cart-table thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+      }
+
+      .cart-table th,
+      .cart-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+      }
+
+      .cart-table tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      .cart-table tbody tr:hover {
+        background-color: #f8f9fa;
+      }
+
+      /* Admin Dashboard */
+      .dashboard-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+        margin: 2rem 0;
+      }
+
+      .stat-card {
+        background: #fff;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        border-top: 4px solid #667eea;
+      }
+
+      .stat-card h3 {
+        color: #666;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+      }
+
+      .stat-card p {
+        color: #667eea;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0;
+      }
+
+      /* Category Grid */
+      .category-card {
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .category-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      .category-image {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+      }
+
+      .category-card h3 {
+        padding: 1rem;
+        margin: 0;
+        font-weight: 600;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .products-grid {
+          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+          gap: 1rem;
+        }
+
+        .nav-link {
+          margin-left: 0;
+          margin-top: 0.5rem;
+        }
+
+        .dashboard-stats {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* Loading and Empty States */
+      .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #999;
+      }
+
+      .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .fade-in {
+        animation: fadeIn 0.3s ease-in;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- React Root Element -->
+    <div id="root"></div>
+
+    <!-- React Script (Vite will inject this) -->
+    <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Bootstrap JS Bundle -->
+    <script 
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" 
+      integrity="sha384-geWF76RCwLtnZ8qwWbSxccPQtF3EpF3fnJHog6LaEVF6141PP0MblVtFZLoMQ3d0d" 
+      crossorigin="anonymous">
+    </script>
+
+    <!-- Optional: Popper.js for Bootstrap tooltips and popovers -->
+    <script 
+      src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" 
+      integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6t+9Pd57XK/8eB8dRvtfmn6rdRgeiI85e0o" 
+      crossorigin="anonymous">
+    </script>
+  </body>
+</html>
