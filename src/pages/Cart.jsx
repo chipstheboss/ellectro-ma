@@ -1,7 +1,6 @@
-import React from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/useCart';
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity } = useCart();
@@ -39,7 +38,7 @@ const Cart = () => {
                         type="number" 
                         min="1" 
                         value={item.quantity}
-                        onChange={(e) => updateQuantity(item.id, parseInt(e.target.value))}
+                        onChange={(e) => updateQuantity(item.id, Number(e.target.value))}
                       />
                     </td>
                     <td>${(item.price * item.quantity).toFixed(2)}</td>

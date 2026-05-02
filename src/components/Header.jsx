@@ -1,17 +1,30 @@
-import React from 'react';
+import { Link, NavLink } from 'react-router-dom';
+import { useAuth } from '../context/useAuth';
+import { useCart } from '../context/useCart';
 
 const Header = () => {
+  const { currentUser, logout } = useAuth();
+  const { cartItems } = useCart();
+  const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+
   return (
     <header className="header">
       <div className="container">
         <div className="navbar">
-          <h1>ellectro.ma</h1>
+          <Link to="/" className="brand">ellectro.ma</Link>
           <nav>
             <ul>
-              <li><a href="/">Home</a></li>
-              <li><a href="/category">Categories</a></li>
-              <li><a href="/cart">Cart</a></li>
-              <li><a href="/login">Login</a></li>
+              <li><NavLink to="/">Home</NavLink></li>
+              <li><NavLink to="/category">Categories</NavLink></li>
+              <li><NavLink to="/cart">Cart ({cartCount})</NavLink></li>
+              {currentUser ? (
+                <>
+                  <li><NavLink to="/admin">Admin</NavLink></li>
+                  <li><button className="link-button" onClick={logout}>Logout</button></li>
+                </>
+              ) : (
+                <li><NavLink to="/login">Login</NavLink></li>
+              )}
             </ul>
           </nav>
         </div>

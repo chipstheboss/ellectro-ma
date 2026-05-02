@@ -1,103 +1,177 @@
-// Product Service
-// All Firebase CRUD operations for products
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+const AUTH_TOKEN_KEY = 'ellectro-ma-admin-token';
 
-import { 
-  collection, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  doc, 
-  getDocs, 
-  getDoc,
-  query,
-  where 
-} from 'firebase/firestore';
-import { db } from '../firebase/firebase';
+const getAuthHeaders = () => {
+  const token = localStorage.getItem(AUTH_TOKEN_KEY);
 
-const PRODUCTS_COLLECTION = 'products';
-
-// Create a new product
-export const createProduct = async (productData) => {
-  try {
-    const docRef = await addDoc(collection(db, PRODUCTS_COLLECTION), {
-      ...productData,
-      createdAt: new Date(),
-    });
-    return docRef.id;
-  } catch (error) {
-    console.error('Error creating product:', error);
-    throw error;
-  }
+  return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-// Get all products
+const parseResponse = async (response) => {
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.message || 'Request failed.');
+  }
+
+  return data;
+};
+
+export const createProduct = (productData, imageFiles = [], onProgress) => (
+  new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    const formData = new FormData();
+
+    Object.entries(productData).forEach(([key, value]) => {
+      formData.append(key, value ?? '');
+    });
+
+    Array.from(imageFiles).forEach((file) => {
+      formData.append('images', file);
+    });
+
+    request.upload.onprogress = (event) => {
+      if (!event.lengthComputable) return;
+
+      onProgress?.({
+        progress: Math.round((event.loaded / event.total) * 100)
+      });
+    };
+
+    request.onload = () => {
+      const data = JSON.parse(request.responseText || '{}');
+
+      if (request.status >= 200 && request.status < 300) {
+        resolve(data.id);
+        return;
+      }
+
+      reject(new Error(data.message || 'Unable to create product.'));
+    };
+
+    request.onerror = () => {
+      reject(new Error('Unable to reach the MySQL API server.'));
+    };
+
+    request.open('POST', `${API_BASE_URL}/products`);
+
+    Object.entries(getAuthHeaders()).forEach(([key, value]) => {
+      request.setRequestHeader(key, value);
+    });
+
+    request.send(formData);
+  })
+);
+
 export const getAllProducts = async () => {
   try {
-    const querySnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
-    const products = [];
-    querySnapshot.forEach((doc) => {
-      products.push({ id: doc.id, ...doc.data() });
-    });
-    return products;
+    const response = await fetch(`${API_BASE_URL}/products`);
+    return parseResponse(response);
   } catch (error) {
-    console.error('Error fetching products:', error);
-    throw error;
+    throw new Error(error.message || 'Unable to reach the MySQL API server.', { cause: error });
   }
 };
 
-// Get a single product by ID
 export const getProductById = async (productId) => {
   try {
-    const docRef = doc(db, PRODUCTS_COLLECTION, productId);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      return { id: docSnap.id, ...docSnap.data() };
-    } else {
-      throw new Error('Product not found');
-    }
+    const response = await fetch(`${API_BASE_URL}/products/${productId}`);
+    return parseResponse(response);
   } catch (error) {
-    console.error('Error fetching product:', error);
-    throw error;
+    throw new Error(error.message || 'Unable to reach the MySQL API server.', { cause: error });
   }
 };
 
-// Get products by category
 export const getProductsByCategory = async (category) => {
   try {
-    const q = query(collection(db, PRODUCTS_COLLECTION), where('category', '==', category));
-    const querySnapshot = await getDocs(q);
-    const products = [];
-    querySnapshot.forEach((doc) => {
-      products.push({ id: doc.id, ...doc.data() });
-    });
-    return products;
+    const response = await fetch(`${API_BASE_URL}/products/category/${encodeURIComponent(category)}`);
+    return parseResponse(response);
   } catch (error) {
-    console.error('Error fetching products by category:', error);
-    throw error;
+    throw new Error(error.message || 'Unable to reach the MySQL API server.', { cause: error });
   }
 };
 
-// Update a product
 export const updateProduct = async (productId, productData) => {
-  try {
-    const docRef = doc(db, PRODUCTS_COLLECTION, productId);
-    await updateDoc(docRef, {
-      ...productData,
-      updatedAt: new Date(),
-    });
-  } catch (error) {
-    console.error('Error updating product:', error);
-    throw error;
-  }
+  const response = await fetch(`${API_BASE_URL}/products/${productId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders()
+    },
+    body: JSON.stringify(productData)
+  });
+
+  return parseResponse(response);
 };
 
-// Delete a product
+export const addProductImages = (productId, imageFiles = [], onProgress) => (
+  new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    const formData = new FormData();
+
+    Array.from(imageFiles).forEach((file) => {
+      formData.append('images', file);
+    });
+
+    request.upload.onprogress = (event) => {
+      if (!event.lengthComputable) return;
+
+      onProgress?.({
+        progress: Math.round((event.loaded / event.total) * 100)
+      });
+    };
+
+    request.onload = () => {
+      const data = JSON.parse(request.responseText || '{}');
+
+      if (request.status >= 200 && request.status < 300) {
+        resolve(data);
+        return;
+      }
+
+      reject(new Error(data.message || 'Unable to upload product images.'));
+    };
+
+    request.onerror = () => {
+      reject(new Error('Unable to reach the MySQL API server.'));
+    };
+
+    request.open('POST', `${API_BASE_URL}/products/${productId}/images`);
+
+    Object.entries(getAuthHeaders()).forEach(([key, value]) => {
+      request.setRequestHeader(key, value);
+    });
+
+    request.send(formData);
+  })
+);
+
+export const updateProductImagesOrder = async (productId, imageIds) => {
+  const response = await fetch(`${API_BASE_URL}/products/${productId}/images/order`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders()
+    },
+    body: JSON.stringify({ imageIds })
+  });
+
+  return parseResponse(response);
+};
+
+export const deleteProductImage = async (productId, imageId) => {
+  const response = await fetch(`${API_BASE_URL}/products/${productId}/images/${imageId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders()
+  });
+
+  return parseResponse(response);
+};
+
 export const deleteProduct = async (productId) => {
-  try {
-    const docRef = doc(db, PRODUCTS_COLLECTION, productId);
-    await deleteDoc(docRef);
-  } catch (error) {
-    console.error('Error deleting product:', error);
-    throw error;
-  }
+  const response = await fetch(`${API_BASE_URL}/products/${productId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders()
+  });
+
+  return parseResponse(response);
 };

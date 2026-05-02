@@ -1,9 +1,23 @@
-import React, { createContext, useContext, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { CartContext } from './cart-context';
 
-const CartContext = createContext();
+const CART_STORAGE_KEY = 'ellectro-ma-cart';
+
+const getStoredCart = () => {
+  try {
+    const storedCart = localStorage.getItem(CART_STORAGE_KEY);
+    return storedCart ? JSON.parse(storedCart) : [];
+  } catch {
+    return [];
+  }
+};
 
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(getStoredCart);
+
+  useEffect(() => {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
+  }, [cartItems]);
 
   const addToCart = (product) => {
     setCartItems(prevItems => {
@@ -44,12 +58,4 @@ export const CartProvider = ({ children }) => {
       {children}
     </CartContext.Provider>
   );
-};
-
-export const useCart = () => {
-  const context = useContext(CartContext);
-  if (!context) {
-    throw new Error('useCart must be used within a CartProvider');
-  }
-  return context;
 };

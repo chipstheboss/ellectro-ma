@@ -1,14 +1,37 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { useAuth } from '../context/useAuth';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { currentUser, login } = useAuth();
+  const redirectTo = location.state?.from?.pathname || '/admin';
 
-  const handleSubmit = (e) => {
+  if (currentUser) {
+    return <Navigate to={redirectTo} replace />;
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Firebase authentication logic
+    setError('');
+    setSubmitting(true);
+
+    try {
+      await login(email, password);
+      navigate(redirectTo, { replace: true });
+    } catch (loginError) {
+      console.error('Login error:', loginError);
+      setError(loginError.message || 'Invalid email or password.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -37,7 +60,10 @@ const Login = () => {
               required
             />
           </div>
-          <button type="submit" className="btn btn-primary">Login</button>
+          {error && <p className="form-error">{error}</p>}
+          <button type="submit" className="btn btn-primary" disabled={submitting}>
+            {submitting ? 'Logging in...' : 'Login'}
+          </button>
         </form>
       </main>
       <Footer />
